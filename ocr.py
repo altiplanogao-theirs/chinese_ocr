@@ -11,6 +11,7 @@ from ctpn.text_detect import text_detect
 from lib.fast_rcnn.config import cfg_from_file
 from densenet.model import predict as keras_densenet
 
+import time
 
 def sort_box(box):
     """ 
@@ -80,8 +81,20 @@ def model(img, adjust=False):
     @adjust: 是否调整文字识别结果
     """
     cfg_from_file('./ctpn/ctpn/text.yml')
-    text_recs, img_framed, img = text_detect(img)
-    text_recs = sort_box(text_recs)
-    result = charRec(img, text_recs, adjust)
+    loops = 10;
+    elapse0 = elapse1 = elapse2 = 0
+    for v in range(loops):
+        t0 = time.time()
+        text_recs, img_framed, img = text_detect(img)
+        t1 = time.time()
+        elapse0 += t1 - t0
+        text_recs = sort_box(text_recs)
+        t2 = time.time()
+        elapse1 += t2 - t1
+        result = charRec(img, text_recs, adjust)
+        t3 = time.time()
+        elapse2 += t3 - t2
+        print("Each: ", (elapse2/(v+1)))
+
     return result, img_framed
 
